@@ -1,0 +1,246 @@
+/* ======== GLOBAL & SETUP ======== */
+:root {
+    --bg-dark: #121212;
+    --primary: #1e1e1e;
+    --secondary: #2a2a2a;
+    --accent: #bb86fc;
+    --accent-dark: #3700b3;
+    --text-primary: #e0e0e0;
+    --text-secondary: #b3b3b3;
+    --danger: #cf6679;
+    --success: #03dac6;
+    --border-color: #383838;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--bg-dark);
+    color: var(--text-primary);
+    overflow-x: hidden;
+}
+
+/* ======== PAGE MANAGEMENT ======== */
+.page {
+    display: none;
+    min-height: 100vh;
+    width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+.page.active {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+.hidden {
+    display: none !important;
+}
+
+/* ======== GENERAL COMPONENTS ======== */
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s, box-shadow 0.3s;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+.btn:disabled {
+    background-color: #555 !important;
+    color: #888;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+.btn-primary { background-color: var(--accent); color: var(--bg-dark); }
+.btn-primary:hover { background-color: #d0aaff; }
+.btn-danger { background-color: var(--danger); color: var(--bg-dark); }
+.btn-success { background-color: var(--success); color: var(--bg-dark); }
+
+
+input[type="text"],
+input[type="number"],
+select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: var(--secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    color: var(--text-primary);
+    font-size: 1rem;
+    font-family: 'Poppins', sans-serif;
+}
+
+/* ======== LANDING PAGE & ANIMATIONS ======== */
+#landing-page .content, #winner-page .content {
+    text-align: center;
+    z-index: 2;
+}
+.game-title {
+    font-size: 5rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+    text-shadow: 0 0 15px rgba(187, 134, 252, 0.5);
+}
+
+.background-animation {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden;
+    background: linear-gradient(135deg, var(--bg-dark) 0%, #1a0f2b 100%); z-index: 1;
+}
+.background-animation::before {
+    content: '♠ ♥ ♦ ♣'; position: absolute; top: -150px; left: 50%;
+    font-size: 5rem; color: rgba(255, 255, 255, 0.05);
+    animation: fall 15s linear infinite;
+}
+@keyframes fall {
+    to { transform: translateY(105vh) rotate(360deg); }
+}
+
+/* ======== SCORING PAGE & NEW TABLE STYLES ======== */
+#scoring-page {
+    justify-content: flex-start;
+    padding: 20px;
+}
+.scoring-header {
+    width: 100%; max-width: 1200px; display: flex;
+    justify-content: space-between; align-items: center; margin-bottom: 20px;
+}
+#scorecard-container {
+    width: 100%; max-width: 1200px; overflow-x: auto;
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+    background-color: var(--primary);
+}
+.scorecard-table {
+    width: 100%; border-collapse: collapse; text-align: center;
+    min-width: 700px; /* Ensure table has a minimum width */
+    font-family: 'Roboto Mono', monospace;
+}
+.scorecard-table th, .scorecard-table td {
+    padding: 16px 12px;
+    border-bottom: 1px solid var(--border-color);
+}
+.scorecard-table th {
+    background-color: var(--secondary);
+    font-weight: 600; font-family: 'Poppins', sans-serif;
+    position: sticky; top: 0; z-index: 10;
+}
+.scorecard-table tbody tr {
+    transition: background-color 0.2s ease;
+}
+.scorecard-table tbody tr:hover {
+    background-color: #252525;
+}
+.scorecard-table tbody tr.active-round {
+    background-image: linear-gradient(to right, rgba(187, 134, 252, 0.1), rgba(187, 134, 252, 0));
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+}
+.scorecard-table tbody tr.marked-for-removal {
+    background-color: rgba(207, 102, 121, 0.3) !important;
+    text-decoration: line-through;
+}
+.scorecard-table tfoot {
+    font-weight: bold;
+    background-color: var(--secondary);
+    font-family: 'Poppins', sans-serif;
+}
+td.color-cell { font-size: 1.5rem; }
+.remove-round-icon {
+    cursor: pointer; color: var(--danger); font-weight: bold;
+    font-size: 1.2rem; display: inline-block; margin-left: 10px;
+    transition: transform 0.2s;
+}
+.remove-round-icon:hover { transform: scale(1.3); }
+
+/* Footer Controls */
+.controls-footer {
+    width: 100%; max-width: 1200px; margin-top: 20px; display: flex;
+    justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;
+}
+.control-group { display: flex; gap: 10px; align-items: center; }
+/* Toggle Switch */
+.switch { position: relative; display: inline-block; width: 60px; height: 34px; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; }
+.slider:before { position: absolute; content: ""; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: .4s; }
+input:checked + .slider { background-color: var(--accent); }
+input:checked + .slider:before { transform: translateX(26px); }
+.slider.round { border-radius: 34px; }
+.slider.round:before { border-radius: 50%; }
+
+/* ======== WINNER PAGE & PODIUM ======== */
+.celebration-background { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; background: linear-gradient(135deg, #1a0f2b 0%, var(--bg-dark) 100%); }
+#podium-container { display: flex; align-items: flex-end; justify-content: center; height: 300px; width: 100%; gap: 10px; margin: 40px 0; }
+.podium-place { width: 120px; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; animation: rise 1s ease-out forwards; }
+.podium-place h3 { font-size: 1.5rem; margin-bottom: 5px; }
+.podium-place p { font-size: 1.2rem; font-weight: 600; }
+.podium-1st { background-color: #ffd700; color: #333; height: 250px; }
+.podium-2nd { background-color: #c0c0c0; color: #333; height: 180px; }
+.podium-3rd { background-color: #cd7f32; color: #333; height: 120px; }
+
+@keyframes rise {
+    from { transform: translateY(300px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* ======== MODALS ======== */
+.modal {
+    position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%;
+    background-color: rgba(0,0,0,0.7); display: none; /* Initially hidden */
+    align-items: center; justify-content: center;
+}
+.modal.active { display: flex; }
+.modal-content {
+    background-color: var(--primary); padding: 30px; border-radius: 12px;
+    width: 90%; max-width: 500px; display: flex; flex-direction: column; gap: 15px;
+}
+.modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px; }
+#player-inputs-container { max-height: 200px; overflow-y: auto; }
+.form-group small { color: var(--text-secondary); }
+.radio-group { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
+#assume-context-info { color: var(--text-secondary); font-style: italic; }
+#assume-restriction-text { color: var(--danger); font-weight: bold; }
+
+#score-entry-container .player-score-entry {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 0; border-bottom: 1px solid var(--border-color);
+}
+.player-score-entry:last-child { border-bottom: none; }
+.player-score-entry button { flex-basis: 48%; padding: 8px; }
+
+.player-score-entry button.unsuccessful, 
+.player-score-entry button.successful { 
+    background-color: var(--secondary); 
+}
+.player-score-entry button.successful.selected {
+    background-color: var(--success);
+    color: var(--bg-dark);
+}
+.player-score-entry button.unsuccessful.selected {
+    background-color: var(--danger);
+    color: var(--bg-dark);
+}
+
+/* ======== RESPONSIVE DESIGN ======== */
+@media (max-width: 600px) {
+    .game-title { font-size: 3.5rem; }
+    .controls-footer { flex-direction: column; align-items: stretch; text-align: center; }
+    .podium-place { width: 90px; }
+}
+

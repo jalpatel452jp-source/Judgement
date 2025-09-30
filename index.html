@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Judgement Scorecard</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Roboto+Mono&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- ======== LANDING PAGE ======== -->
+    <section id="landing-page" class="page active">
+        <div class="background-animation"></div>
+        <div class="content">
+            <h1 class="game-title">Judgement</h1>
+            <button id="cta-play" class="btn btn-primary">Let's Play</button>
+        </div>
+    </section>
+
+    <!-- ======== SCORING PAGE ======== -->
+    <section id="scoring-page" class="page">
+        <header class="scoring-header">
+            <h2>Scorecard</h2>
+            <button id="finish-game-btn" class="btn btn-danger">Finish Game</button>
+        </header>
+        <div id="scorecard-container">
+            <!-- Scorecard table will be injected here by JS -->
+        </div>
+        <footer class="controls-footer">
+            <div id="default-controls" class="control-group">
+                <button id="add-round-btn" class="btn">Add Round</button>
+                <button id="remove-round-btn" class="btn">Remove Round</button>
+            </div>
+            <div id="delete-mode-controls" class="control-group hidden">
+                <button id="save-changes-btn" class="btn btn-success">Save Removals</button>
+                <button id="discard-changes-btn" class="btn btn-danger">Discard</button>
+            </div>
+            <div class="control-group">
+                <label for="toggle-totals" class="toggle-label">Show Totals</label>
+                <label class="switch">
+                    <input type="checkbox" id="toggle-totals" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
+        </footer>
+    </section>
+
+    <!-- ======== WINNER PAGE ======== -->
+    <section id="winner-page" class="page">
+        <div class="celebration-background"></div>
+        <div class="content">
+            <h2>Final Results</h2>
+            <div id="podium-container">
+                <!-- Podium will be injected here by JS -->
+            </div>
+            <button id="new-game-btn" class="btn btn-primary">Start a New Game</button>
+        </div>
+    </section>
+
+    <!-- ======== MODALS ======== -->
+
+    <!-- Game Setup Modal -->
+    <div id="setup-modal" class="modal">
+        <div class="modal-content">
+            <!-- Step 1: Player Config -->
+            <div id="setup-step-1">
+                <h3>1. Configure Players</h3>
+                <div id="player-inputs-container">
+                    <input type="text" placeholder="Player 1 Name" class="player-input">
+                    <input type="text" placeholder="Player 2 Name" class="player-input">
+                    <input type="text" placeholder="Player 3 Name" class="player-input">
+                </div>
+                <button id="add-player-btn" class="btn" disabled>Add Player</button>
+                <button id="save-players-btn" class="btn btn-primary">Save Players</button>
+            </div>
+            <!-- Step 2: Game Rules -->
+            <div id="setup-step-2" class="hidden">
+                <h3>2. Configure Game Rules</h3>
+                <div class="form-group">
+                    <label for="num-rounds">Number of Rounds (Max Cards)</label>
+                    <input type="number" id="num-rounds" min="1">
+                    <small id="max-rounds-info"></small>
+                </div>
+                <div class="form-group">
+                    <label>Game Type</label>
+                    <div class="radio-group">
+                        <input type="radio" id="game-type-complete" name="game-type" value="complete" checked>
+                        <label for="game-type-complete">Complete (e.g., 1..N..1)</label>
+                    </div>
+                    <div class="radio-group">
+                        <input type="radio" id="game-type-incomplete" name="game-type" value="incomplete">
+                        <label for="game-type-incomplete">Incomplete (e.g., 1..N)</label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="multiplier">Score Multiplier</label>
+                    <input type="number" id="multiplier" value="10" min="1">
+                </div>
+                <button id="start-game-btn" class="btn btn-primary">Start Game</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Assumed Hands Modal -->
+    <div id="assume-modal" class="modal">
+        <div class="modal-content">
+            <h3 id="assume-modal-title">Enter Assumed Hands</h3>
+            <p id="assume-context-info"></p>
+            <p id="assume-restriction-text"></p>
+            <input type="number" id="assume-input" min="0">
+            <div class="modal-actions">
+                <button id="assume-undo-btn" class="btn">Undo</button>
+                <button id="assume-next-btn" class="btn btn-primary">Next</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Score Entry Modal -->
+    <div id="score-modal" class="modal">
+        <div class="modal-content">
+            <h3>Enter Round Score</h3>
+            <div id="score-entry-container">
+                <!-- Player score entries will be injected here by JS -->
+            </div>
+            <button id="save-scores-btn" class="btn btn-primary">Save Scores</button>
+        </div>
+    </div>
+
+    <!-- Add Round Modal -->
+    <div id="add-round-modal" class="modal">
+        <div class="modal-content">
+            <h3>Add a New Round</h3>
+            <div class="form-group">
+                <label for="add-round-color">Color</label>
+                <select id="add-round-color">
+                    <option value="Spades">Spades</option>
+                    <option value="Diamonds">Diamonds</option>
+                    <option value="Clubs">Clubs</option>
+                    <option value="Hearts">Hearts</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="add-round-to-play">To Play</label>
+                <select id="add-round-to-play"></select>
+            </div>
+            <div class="form-group">
+                <label for="add-round-cards">Number of Cards</label>
+                <input type="number" id="add-round-cards" min="1">
+            </div>
+            <div class="modal-actions">
+                <button id="cancel-add-round-btn" class="btn">Cancel</button>
+                <button id="save-new-round-btn" class="btn btn-primary">Add Round</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
