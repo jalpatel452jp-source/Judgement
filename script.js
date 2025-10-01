@@ -320,26 +320,124 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleSaveScores() {
         const roundIndex = parseInt(saveScoresBtn.dataset.roundIndex);
         const round = gameState.rounds[roundIndex];
-        let allSelected = true;
-
+        const cardsDealt = round.cards;
+    
+        // 1. Gather selections
+        const selections = [];
+        let allButtonsSelected = true;
         scoreEntryContainer.querySelectorAll('.score-buttons').forEach(sel => {
             const playerName = sel.dataset.playerName;
             const selectedBtn = sel.querySelector('button.selected');
-            if (!selectedBtn) { allSelected = false; return; }
-            const isSuccessful = selectedBtn.classList.contains('successful');
-            const assumed = round.assumed[playerName];
-            let points = isSuccessful ? (assumed === 0 ? 10 : assumed * gameState.config.multiplier) : 0;
-            round.scores[playerName] = points;
-            gameState.players.find(p => p.name === playerName).score += points;
+            if (!selectedBtn) {
+                allButtonsSelected = false;
+                return;
+            }
+            selections.push({
+                name: playerName,
+                assumed: round.assumed[playerName],
+                isSuccessful: selectedBtn.classList.contains('successful')
+            });
         });
-
-        if (!allSelected) { alert('Please select a result for every player.'); return; }
+    
+        if (!allButtonsSelected) {
+            alert('Please select a result for every player.');
+            return;
+        }
+    
+        // 2. Perform validation
+        const validationError = validateScoreSelection(selections, cardsDealt);
+        if (validationError) {
+            alert(validationError);
+            return;
+        }
+    
+        // 3. If validation passes, save scores
+        selections.forEach(selection => {
+            const { name, assumed, isSuccessful } = selection;
+            const player = gameState.players.find(p => p.name === name);
+            // Temporarily subtract old score before adding new one, in case of re-scoring a round (future feature)
+            // For now, this is just additive
+            const points = isSuccessful ? (assumed === 0 ? 10 : assumed * gameState.config.multiplier) : 0;
+            round.scores[name] = points;
+            player.score += points; // This could be improved to recalculate total to be safer
+        });
+    
+        // Recalculate all scores to ensure consistency
+        gameState.players.forEach(player => {
+            player.score = gameState.rounds.reduce((total, r) => total + (r.scores[player.name] || 0), 0);
+        });
+    
         round.isComplete = true;
         gameState.currentRoundIndex++;
         toggleModal('score', false);
         renderScorecard();
-
+    
         if (gameState.currentRoundIndex >= gameState.rounds.length) handleFinishGame(false);
+    }
+
+    function validateScoreSelection(selections, cardsDealt) {
+        const successfulPlayers = selections.filter(s => s.isSuccessful);
+        const unsuccessfulPlayers = selections.filter(s => !s.isSuccessful);
+    
+        const confirmedWins = successfulPlayers.reduce((sum, player) => sum + player.assumed, 0);
+    
+        // Check 1: Over-selection of successful hands
+        if (confirmedWins > cardsDealt) {
+            return `Invalid selection: The total hands won by 'Successful' players (${confirmedWins}) exceeds the number of cards in the round (${cardsDealt}).`;
+        }
+    
+        const remainingWins = cardsDealt - confirmedWins;
+    
+        // If there are no unsuccessful players, the sum of successful hands must match the cards dealt
+        if (unsuccessfulPlayers.length === 0) {
+            if (remainingWins !== 0) {
+                return `Invalid selection: All players were 'Successful', but their total hands (${confirmedWins}) does not match the number of cards in the round (${cardsDealt}).`;
+            }
+            return null; // Valid
+        }
+    
+        // Check 2: Implausible distribution for unsuccessful players
+        if (!canDistribute(unsuccessfulPlayers, remainingWins)) {
+            return `Invalid selection: It's impossible to distribute the remaining ${remainingWins} hand(s) among the 'Unsuccessful' players without one of them matching their assumed hands. Please check your selections.`;
+        }
+    
+        return null; // Selection is valid
+    }
+    
+    function canDistribute(unsuccessfulPlayers, remainingWins) {
+        const n = unsuccessfulPlayers.length;
+        if (n === 0) {
+            return remainingWins === 0;
+        }
+    
+        // Recursive helper function to find a valid distribution
+        function findSolution(playerIndex, currentSum) {
+            // Base case: If we've assigned hands to all players
+            if (playerIndex === n) {
+                // Return true only if the sum of assigned hands equals the target
+                return currentSum === remainingWins;
+            }
+    
+            const player = unsuccessfulPlayers[playerIndex];
+    
+            // Iterate through all possible numbers of hands this player could have won
+            for (let handsWon = 0; handsWon <= remainingWins - currentSum; handsWon++) {
+                // A player is 'unsuccessful', so they cannot have won their assumed number of hands
+                if (handsWon === player.assumed) {
+                    continue; // Skip this invalid possibility
+                }
+    
+                // Recurse for the next player with the updated sum
+                if (findSolution(playerIndex + 1, currentSum + handsWon)) {
+                    return true; // A valid distribution was found down this path
+                }
+            }
+    
+            // If the loop finishes, no valid distribution was found for this player
+            return false;
+        }
+    
+        return findSolution(0, 0);
     }
     
     function handleFinishGame(prompt = true) {
